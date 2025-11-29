@@ -65,17 +65,44 @@ def add_identity():
   pyautogui.write(new_id, interval=0.05)
   
 
-  
   # indestery
   pyautogui.click(1316, 342, interval=0.1)
   pyautogui.click(1444, 342, interval=0.1)
   
 
+# Address
+def address():
+  pyautogui.click(828, 342, interval=1)
+  pyautogui.write("Qardho", interval=0.05)
+
+
+# select domain, zone, area
+    # make sure to wait for long engoh like 5 sec or 10
+# kin full name & number
+    # 252716408296
+
+
+## next Page 
+# 1. prepaid one click 
+    # wait for long like 5 fsec
+# 2. attach plan
+    # take care of scroll
+# 3. icc id option click
+# 4. MSISDN Number Series
+    # make sure of the position
+    # and scroll and save
+# 5. IMSI*
+    # ask for input before 
+    # search it
+    # choise it
+
+# netxt, next
 
 
 
-# pos()
+
+pos()
 # name()
 # gender()
-scroll()
-add_identity()
+# scroll()
+# add_identity()
