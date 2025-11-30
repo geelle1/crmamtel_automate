@@ -218,13 +218,13 @@ function Page1() {
 
     fillBasicInfo();
     if (!openIdentitySection()) {
-      // If identity cannot be opened, stop early
-      return;
+      return;  // If identity cannot be opened, stop early
     }
     fillIdentitySection();
     fillNextOfKinSection();
     selectLocationWithPolling();
   }
+  
   fillFormFromConsole();
 }
 
@@ -492,14 +492,9 @@ function Page2() {
     const nextBtn = [...document.querySelectorAll("button.btn.btn-info")].find(
       (btn) => btn.textContent.trim() === "Next"
     );
-
-    if (!nextBtn) {
-      console.warn("Next button not found.");
-      return;
-    }
-
     nextBtn.click();
     console.log("Next (to page 3) clicked ✅");
   }
+  clickThirdPageNext();
   clickThirdPageNext();
 }
