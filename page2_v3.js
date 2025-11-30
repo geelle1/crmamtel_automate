@@ -1,4 +1,4 @@
-function Page1() {
+function page1() {
   function fillFormFromConsole() {
     const formatDate = (date) => {
       const year = date.getFullYear();
@@ -228,7 +228,12 @@ function Page1() {
   fillFormFromConsole();
 }
 
-async function Page2() {
+async function page2() {
+
+  // simple wait helper
+  const wait = (ms) => new Promise(resolve => setTimeout(resolve, ms));
+
+  
 
   // -----------------------------------------
   // 1. PREPAID CHECKBOX
@@ -246,7 +251,8 @@ async function Page2() {
     console.log("Prepaid checkbox checked ✅");
   }
 
-  checkPrepaidCheckbox();   // MUST RUN BEFORE ATTACH PLAN
+  checkPrepaidCheckbox();      // MUST RUN BEFORE ATTACH PLAN
+  await wait(1000);            // give UI 1s to react
 
 
   // -----------------------------------------
@@ -272,7 +278,7 @@ async function Page2() {
     for (let i = 0; i < 40; i++) {
       modal = document.querySelector(".modal-content");
       if (modal) break;
-      await new Promise(r => setTimeout(r, 100));
+      await wait(100);
     }
     if (!modal) {
       console.warn("Product Catalog modal did not load.");
@@ -286,7 +292,7 @@ async function Page2() {
       basePlan = [...modal.querySelectorAll(".card-container")]
         .find(c => c.querySelector(".heading.bold.red")?.textContent.trim() === "Base plan");
       if (basePlan) break;
-      await new Promise(r => setTimeout(r, 100));
+      await wait(100);
     }
     if (!basePlan) {
       console.warn("Base plan not found in modal.");
@@ -301,7 +307,7 @@ async function Page2() {
     for (let i = 0; i < 40; i++) {
       saveBtn = modal.querySelector("button.btn.btn-info.mx-2");
       if (saveBtn) break;
-      await new Promise(r => setTimeout(r, 100));
+      await wait(100);
     }
 
     if (!saveBtn) {
@@ -309,36 +315,37 @@ async function Page2() {
       return false;
     }
 
+    await wait(200);           // tiny buffer before save
     saveBtn.click();
     console.log("Attach Plan saved.");
 
     // Wait for modal to close
     for (let i = 0; i < 40; i++) {
       if (!document.querySelector(".modal-content")) break;
-      await new Promise(r => setTimeout(r, 100));
+      await wait(100);
     }
 
     console.log("Attach Plan COMPLETED 🎉");
     return true;
   }
 
-
   const attachDone = await clickAddAttachPlan();
   if (!attachDone) {
     console.error("Attach plan failed. Stopping Page2.");
     return;
   }
+  await wait(500);            // pause before MSISDN
 
 
   // -----------------------------------------
   // 3. ADD MSISDN SERIES (AFTER ATTACH PLAN)
   // -----------------------------------------
   async function addMsisdnSeries() {
-
-    const icons = [...document.querySelectorAll("button.btn-info .material-icons")]
+    // find all "add" icon buttons once
+    const addIcons = [...document.querySelectorAll("button.btn-info .material-icons")]
       .filter(s => s.textContent.trim() === "add");
 
-    const addBtn = icons[1]?.closest("button");
+    const addBtn = addIcons[1]?.closest("button"); // index 1 = MSISDN
     if (!addBtn) {
       console.warn("MSISDN Add button not found.");
       return false;
@@ -347,15 +354,14 @@ async function Page2() {
     addBtn.click();
     console.log("MSISDN Add clicked.");
 
-    // Wait modal
+    // wait for the specific MSISDN modal
     let modal = null;
-    for (let i = 0; i < 20; i++) {
+    for (let i = 0; i < 25; i++) {
       modal = [...document.querySelectorAll(".modal-content")]
         .find(m => m.textContent.includes("MSISDN List"));
       if (modal) break;
-      await new Promise(r => setTimeout(r, 100));
+      await wait(120);
     }
-
     if (!modal) {
       console.warn("MSISDN modal not found.");
       return false;
@@ -379,17 +385,27 @@ async function Page2() {
       return false;
     }
 
+    await wait(300);           // let selection propagate
     saveBtn.click();
     console.log("MSISDN saved.");
+
+    // wait for modal to close
+    for (let i = 0; i < 25; i++) {
+      const stillOpen = [...document.querySelectorAll(".modal-content")]
+        .some(m => m.textContent.includes("MSISDN List"));
+      if (!stillOpen) break;
+      await wait(120);
+    }
+
     return true;
   }
 
-
   const msisdnDone = await addMsisdnSeries();
   if (!msisdnDone) {
-    console.error("MSISDN failed.");
+    console.error("MSISDN failed. Stopping Page2.");
     return;
   }
+  await wait(1000);            // pause before ICCID
 
 
   // -----------------------------------------
@@ -397,7 +413,10 @@ async function Page2() {
   // -----------------------------------------
   function selectIccidRadio() {
     const radio = document.getElementById("iccid");
-    if (!radio) return false;
+    if (!radio) {
+      console.warn("ICCID radio not found.");
+      return false;
+    }
 
     radio.checked = true;
     ["click", "input", "change"].forEach(evt =>
@@ -408,11 +427,10 @@ async function Page2() {
   }
 
   async function handleIccid() {
-
+    // reuse icon list so indexes are stable
     const addIcons = [...document.querySelectorAll("button.btn.btn-info .material-icons")]
       .filter(s => s.textContent.trim() === "add");
-
-    const addBtn = addIcons[2]?.closest("button");
+    const addBtn = addIcons[2]?.closest("button"); // index 2 = ICCID
     if (!addBtn) {
       console.warn("ICCID Add button not found.");
       return false;
@@ -421,119 +439,117 @@ async function Page2() {
     addBtn.click();
     console.log("ICCID Add clicked.");
 
-    await new Promise(r => setTimeout(r, 800));
-
-    const modal = [...document.querySelectorAll(".modal-content")]
-      .find(m => m.textContent.includes("IMSI List"));
-
+    // wait for IMSI/ICCID modal
+    let modal = null;
+    for (let i = 0; i < 25; i++) {
+      modal = [...document.querySelectorAll(".modal-content")]
+        .find(m => m.textContent.includes("IMSI List"));
+      if (modal) break;
+      await wait(120);
+    }
     if (!modal) {
       console.warn("ICCID modal not found.");
       return false;
     }
 
-
     const term = prompt("Enter IMSI search term:");
-    if (!term) return false;
+    if (!term) {
+      console.warn("No IMSI term entered.");
+      return false;
+    }
 
     const searchInput = modal.querySelector("input#searchtextIMSI.form-control");
+    if (!searchInput) {
+      console.warn("ICCID search input not found.");
+      return false;
+    }
+
     searchInput.value = term;
     ["input", "change", "keyup"].forEach(e =>
       searchInput.dispatchEvent(new Event(e, { bubbles: true }))
     );
 
-    const searchButton = modal.querySelector(".input-group-append button.btn.btn-info")?.closest("button");
-    searchButton.click();
+    const searchButton = modal
+      .querySelector(".input-group-append button.btn.btn-info");
+    if (!searchButton) {
+      console.warn("ICCID search button not found.");
+      return false;
+    }
 
-    await new Promise(r => setTimeout(r, 1000));
+    searchButton.click();
+    console.log("ICCID search clicked.");
+
+    await wait(1000);
 
     const first = modal.querySelector('table input.form-check-input[type="checkbox"]');
-    if (!first) return false;
+    if (!first) {
+      console.warn("ICCID checkbox not found.");
+      return false;
+    }
 
     first.checked = true;
     ["click", "input", "change"].forEach(e =>
       first.dispatchEvent(new Event(e, { bubbles: true }))
     );
+    console.log("ICCID row selected.");
 
     const saveBtn = modal.querySelector("button.btn.btn-info.mx-2");
+    if (!saveBtn) {
+      console.warn("ICCID save button not found.");
+      return false;
+    }
+
+    await wait(300);
     saveBtn.click();
     console.log("ICCID saved.");
-
     return true;
   }
 
-  if (selectIccidRadio()) {
-    await handleIccid();
+  if (!selectIccidRadio()) {
+    console.error("ICCID radio step failed. Stopping Page2.");
+    return;
   }
 
+  const iccidDone = await handleIccid();
+  if (!iccidDone) {
+    console.error("ICCID step failed. Stopping Page2.");
+    return;
+  }
+  await wait(1000);
+
 
   // -----------------------------------------
-  // 5. CLICK NEXT TWICE
+  // 5. NAVIGATION: NEXT → PAGE 3 → PAGE 4
   // -----------------------------------------
-  function clickThirdPageNext() {
-    const btn = [...document.querySelectorAll("button.btn.btn-info")]
-      .find(b => b.textContent.trim() === "Next");
-
-    if (btn) {
-      btn.click();
-      console.log("Next clicked.");
+  async function goToNextOnce(label = "Next") {
+    let btn = null;
+    for (let i = 0; i < 30; i++) {
+      btn = [...document.querySelectorAll("button.btn.btn-info")]
+        .find(b => b.textContent.trim().toLowerCase() === label.toLowerCase());
+      if (btn) break;
+      await wait(150);
     }
-  }
-  clickThirdPageNext();
-
-  
-// -----------------------------------------
-// 5. PAGE 3 NEXT
-// -----------------------------------------
-async function goToPage3() {
-  console.log("Trying to click Next (Page 3)…");
-
-  let nextBtn = null;
-  for (let i = 0; i < 30; i++) {
-    nextBtn = [...document.querySelectorAll("button.btn.btn-info")]
-      .find(btn => btn.textContent.trim() === "Next");
-    if (nextBtn) break;
-    await new Promise(r => setTimeout(r, 150));
+    if (!btn) {
+      console.warn(`${label} button not found.`);
+      return false;
+    }
+    btn.click();
+    console.log(`${label} clicked.`);
+    await wait(700);
+    return true;
   }
 
-  if (!nextBtn) {
-    console.warn("Next button for Page 3 not found.");
-    return false;
-  }
-
-  nextBtn.click();
-  console.log("Next clicked → Moved to Page 3.");
-  await new Promise(r => setTimeout(r, 800)); // small UI wait
-
-  return true;
+  // page 2 → 3
+  await goToNextOnce("Next");
+  // if needed page 3 → 4:
+  await goToNextOnce("Next");
+  // and final checkout:
+  // await goToNextOnce("Checkout");
 }
 
 
-// -----------------------------------------
-// 6. PAGE 4 CHECKOUT
-// -----------------------------------------
-async function checkoutPage() {
-  console.log("Trying to click Checkout (Page 4)…");
+// to RUN write
+// page1()
+// than
+// page2()
 
-  let checkoutBtn = null;
-  for (let i = 0; i < 30; i++) {
-    checkoutBtn = [...document.querySelectorAll("button.btn.btn-info")]
-      .find(b => b.textContent.trim().toLowerCase() === "checkout");
-    if (checkoutBtn) break;
-    await new Promise(r => setTimeout(r, 150));
-  }
-
-  if (!checkoutBtn) {
-    console.warn("Checkout button not found.");
-    return false;
-  }
-
-  checkoutBtn.click();
-  console.log("Checkout clicked → Order submitted!");
-  return true;
-}
-
-// After ICCID is done:
-await goToPage3();
-await goToPage3();   // second Next if page 3 → page 4
-}
-// await checkoutPage();
