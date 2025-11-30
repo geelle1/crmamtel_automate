@@ -547,7 +547,7 @@ async function page2() {
   // await goToNextOnce("Checkout");
 }
 
-
+// 8925263790000
 // to RUN write
 // page1()
 // than
