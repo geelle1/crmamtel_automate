@@ -601,7 +601,13 @@ async function clickAddAttachPlan() {
   }
   await wait(1000);
 
-  // -----------------------------------------
+  
+  
+
+
+}
+
+// -----------------------------------------
   // 5. NAVIGATION: NEXT → PAGE 3 → PAGE 4
   // -----------------------------------------
   async function goToNextOnce(label = "Next") {
@@ -623,18 +629,35 @@ async function clickAddAttachPlan() {
     return true;
   }
   
-  async function next() {
-    // page 2 → 3
-    await goToNextOnce("Next");
-    // if needed page 3 → 4:
-    await goToNextOnce("Next");
-    // and final checkout:
-    await goToNextOnce("Checkout");
-    
+async function next() {
+  // Simple wait helper
+  const wait = (ms) => new Promise(resolve => setTimeout(resolve, ms));
+
+  async function goToNextOnce(label = "Next") {
+    let btn = null;
+    for (let i = 0; i < 30; i++) {
+      btn = [...document.querySelectorAll("button.btn.btn-info")].find(
+        (b) => b.textContent.trim().toLowerCase() === label.toLowerCase()
+      );
+      if (btn) break;
+      await wait(150);
+    }
+    if (!btn) {
+      console.warn(`${label} button not found.`);
+      return false;
+    }
+    btn.click();
+    console.log(`${label} clicked.`);
+    await wait(700);
+    return true;
   }
-
+  // page 2→3
+  await goToNextOnce("Next");
+  // page 3→4 (repeatable)
+  await goToNextOnce("Next");
+  // Final checkout (if present)
+  await goToNextOnce("Checkout");
 }
-
 // to RUN write
 // page1()
 // than
