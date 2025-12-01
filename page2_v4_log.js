@@ -1,3 +1,4 @@
+let gloable_icc_id = null
 // =========================================
 // SIMPLE ICCID LOGGER (WITH AUTO-SAVE)
 // =========================================
@@ -511,7 +512,8 @@ async function clickAddAttachPlan() {
       console.warn("No IMSI ICCID_number entered.");
       return false;
     }
-    saveIccid(ICCID_number)
+    saveIccid(ICCID_number);
+    gloable_icc_id = ICCID_number;
 
     const searchInput = modal.querySelector(
       "input#searchtextIMSI.form-control"
@@ -660,7 +662,7 @@ async function next() {
   await goToNextOnce("Next");
   // Final checkout (if present)
   await goToNextOnce("Checkout");
-  console.log(ICCID_number)
+  console.log(gloable_icc_id)
 }
 
 // to RUN write
