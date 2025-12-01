@@ -597,13 +597,13 @@ async function clickAddAttachPlan() {
     //   first.dispatchEvent(new Event(e, { bubbles: true }))
     // );
 
-    const first = modal.querySelector(
-      'table input.form-check-input[type="checkbox"]'
-    );
-    if (!first) {
-      console.warn("ICCID checkbox not found.");
-      return false;
-    }
+    // const first = modal.querySelector(
+    //   'table input.form-check-input[type="checkbox"]'
+    // );
+    // if (!first) {
+    //   console.warn("ICCID checkbox not found.");
+    //   return false;
+    // }
 
     // Validate that this checkbox is in the correct row matching the search ICCID_number
     const row = first.closest('tr');
@@ -714,8 +714,7 @@ async function next() {
 
 }
 
-// to RUN write
+// To RUN type:
 // page1()
-// than
 // page2()
 // next()
