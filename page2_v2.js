@@ -304,7 +304,7 @@ function Page2() {
   // run it
   clickAddAttachPlan();
 
-  async function addMsisdnSeries() {
+async function addMsisdnSeries() {
     // 1) Safely find and click the MSISDN Add button (2nd add with icon)
     const iconSpans = [
       ...document.querySelectorAll("button.btn-info .material-icons"),
@@ -327,7 +327,6 @@ function Page2() {
     // 2) Wait for MSISDN modal + table to appear
     let modal = null;
     for (let i = 0; i < 20; i++) {
-      // up to ~2s
       modal = [...document.querySelectorAll(".modal-content")].find((m) =>
         m.textContent.includes("MSISDN List")
       );
@@ -339,19 +338,26 @@ function Page2() {
       return;
     }
 
-    // 3) Select first checkbox in MSISDN table
-    const checkbox = modal.querySelector(
-      'table input.form-check-input[type="checkbox"]'
-    );
-    if (!checkbox) {
-      console.warn("No MSISDN checkbox found inside modal.");
+    // -------------------------
+    // 3) Select the 10th checkbox
+    // -------------------------
+    const checkboxes = [
+      ...modal.querySelectorAll('table input.form-check-input[type="checkbox"]'),
+    ];
+
+    if (checkboxes.length < 10) {
+      console.warn(`Only ${checkboxes.length} MSISDN rows available — cannot select the 10th.`);
       return;
     }
+
+    const checkbox = checkboxes[9]; // 10th element (index starts at 0)
     checkbox.checked = true;
+
     ["click", "input", "change"].forEach((t) =>
       checkbox.dispatchEvent(new Event(t, { bubbles: true }))
     );
-    console.log("2. First MSISDN row selected ✅");
+
+    console.log("2. 10th MSISDN row selected ✅");
 
     // 4) Click the Save in this same modal footer
     const footerRow = modal.querySelector(
@@ -361,18 +367,21 @@ function Page2() {
       console.warn("MSISDN footer row not found.");
       return;
     }
+
     const saveBtn = footerRow.querySelector("button.btn.btn-info.mx-2");
     if (!saveBtn) {
       console.warn("MSISDN Save button not found.");
       return;
     }
-    await wait(200); // tiny delay to let selection propagate
+
+    await wait(200);
     saveBtn.click();
     console.log("3. MSISDN Save clicked ✅");
-  }
+}
 
-  // run it
-  addMsisdnSeries();
+// run it
+addMsisdnSeries();
+
 
   async function handleIccid() {
     // 1) Click 3rd Add button on the whole page
