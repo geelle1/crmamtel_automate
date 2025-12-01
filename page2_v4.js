@@ -1,3 +1,36 @@
+let gloable_icc_id = null
+
+// =========================================
+// SIMPLE ICCID LOGGER (WITH AUTO-SAVE)
+// =========================================
+let iccidLog = JSON.parse(localStorage.getItem('iccidLog') || '[]');
+let logCount = parseInt(localStorage.getItem('iccidCount') || '0');
+
+function saveIccid(iccid) {
+  logCount++;
+  iccidLog.push({
+    id: logCount,
+    time: new Date().toLocaleString('en-US', { timeZone: 'Africa/Mogadishu' }),
+    iccid: iccid
+  });
+  localStorage.setItem('iccidLog', JSON.stringify(iccidLog));
+  localStorage.setItem('iccidCount', logCount);
+  console.log(`📝 #${logCount}: ${iccid}`);
+}
+
+function download_log() {  // renamed for easy console usage
+  if (!iccidLog.length) return;
+  const csv = ['ID,Time,ICCID',
+    ...iccidLog.map(e => `${e.id},"${e.time}","${e.iccid}"`)
+  ].join('\n');
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(new Blob([csv], { type: 'text/csv' }));
+  a.download = `ICCID-Logs/${new Date().toISOString().split('T')[0]}-${logCount}.csv`;
+  a.click();
+  console.log(`💾 AUTO-SAVED ${iccidLog.length} ICCIDs!`);
+}
+
+
 function page1() {
   function fillFormFromConsole() {
     const formatDate = (date) => {
@@ -482,6 +515,9 @@ async function clickAddAttachPlan() {
       return false;
     }
 
+    saveIccid(ICCID_number);  // ← Add the logging here
+    gloable_icc_id = ICCID_number
+
     const searchInput = modal.querySelector(
       "input#searchtextIMSI.form-control"
     );
@@ -568,7 +604,13 @@ async function clickAddAttachPlan() {
   }
   await wait(1000);
 
-  // -----------------------------------------
+  
+  
+
+
+}
+
+// -----------------------------------------
   // 5. NAVIGATION: NEXT → PAGE 3 → PAGE 4
   // -----------------------------------------
   async function goToNextOnce(label = "Next") {
@@ -589,18 +631,45 @@ async function clickAddAttachPlan() {
     await wait(700);
     return true;
   }
-  
-  async function next() {
-    // page 2 → 3
-    await goToNextOnce("Next");
-    // if needed page 3 → 4:
-    await goToNextOnce("Next");
-    // and final checkout:
-    await goToNextOnce("Checkout");
-    
-  }
 
+async function next() {
+  // Simple wait helper
+  const wait = (ms) => new Promise(resolve => setTimeout(resolve, ms));
+
+  async function goToNextOnce(label = "Next") {
+    let btn = null;
+    for (let i = 0; i < 30; i++) {
+      btn = [...document.querySelectorAll("button.btn.btn-info")].find(
+        (b) => b.textContent.trim().toLowerCase() === label.toLowerCase()
+      );
+      if (btn) break;
+      await wait(150);
+    }
+    if (!btn) {
+      console.warn(`${label} button not found.`);
+      return false;
+    }
+    btn.click();
+    console.log(`${label} clicked.`);
+    await wait(700);
+    return true;
+  }
+  // page 2→3
+  await goToNextOnce("Next");
+  // page 3→4 (repeatable)
+  await goToNextOnce("Next");
+  // Final checkout (if present)
+  await goToNextOnce("Checkout");
+  console.log(gloable_icc_id)
 }
+
+function cp(text) {
+  navigator.clipboard ? 
+    navigator.clipboard.writeText(text).then(() => console.log(`✅ COPIED: ${text}`)) :
+    (t=document.createElement('textarea'),t.value=text,document.body.appendChild(t),t.select(),document.execCommand('copy'),document.body.removeChild(t),console.log(`✅ COPIED: ${text}`));
+}
+
+cp(gloable_icc_id)
 
 // to RUN write
 // page1()
