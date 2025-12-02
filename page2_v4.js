@@ -539,7 +539,7 @@ async function clickAddAttachPlan() {
 
     saveIccid(ICCID_number);  // ← Add the logging here
     gloable_icc_id = ICCID_number
-    cp(ICCID_number)
+    
 
     const searchInput = modal.querySelector(
       "input#searchtextIMSI.form-control"
@@ -684,15 +684,10 @@ async function next() {
   // Final checkout (if present)
   await goToNextOnce("Checkout");
   console.log(gloable_icc_id)
+  cp(gloable_icc_id)
 }
 
-function cp(text) {
-  navigator.clipboard ? 
-    navigator.clipboard.writeText(text).then(() => console.log(`✅ COPIED: ${text}`)) :
-    (t=document.createElement('textarea'),t.value=text,document.body.appendChild(t),t.select(),document.execCommand('copy'),document.body.removeChild(t),console.log(`✅ COPIED: ${text}`));
-}
 
-cp(gloable_icc_id)
 
 // to RUN write
 // page1()
