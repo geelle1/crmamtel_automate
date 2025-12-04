@@ -1,27 +1,5 @@
 let gloable_icc_id = null
 
-async function cp(text) {
-  try {
-    if (navigator.clipboard && navigator.clipboard.writeText) {
-      await navigator.clipboard.writeText(text);
-      console.log(`✅ COPIED: ${text}`);
-    } else {
-      // Fallback for older browsers
-      const textArea = document.createElement('textarea');
-      textArea.value = text;
-      document.body.appendChild(textArea);
-      textArea.focus();
-      textArea.select();
-      document.execCommand('copy');
-      document.body.removeChild(textArea);
-      console.log(`COPIED (fallback): ${text}`);
-    }
-  } catch (err) {
-    console.error('Copy failed:', err);
-  }
-}
-
-
 // =========================================
 // SIMPLE ICCID LOGGER (WITH AUTO-SAVE)
 // =========================================
@@ -710,50 +688,134 @@ async function next() {
       await wait(500);
     }
   }
+  
+
+  
+  await wait(1000); // 🔥 wait 1 second before close modal
   await closeModal();
 
   // ===========================================
-  // 🔥 NEW PARTS — NO await used 🔥
+  // Copy to Clipboard
   // ===========================================
+  function copyToClipboard(value) {
+  const text = String(value);
 
-  // 1️⃣ Click home logo immediately (no await)
-  (function clickHomeLogo() {
-    const logo = document.querySelector("img.logoImg");
-    if (logo) {
-      logo.click();
-      console.log("Home logo clicked.");
-    } else {
-      console.warn("Home logo not found.");
-    }
-  })();
+  const textarea = document.createElement("textarea");
+  textarea.value = text;
+  textarea.style.position = "fixed";
+  textarea.style.top = "-999px";
 
-  // 2️⃣ Select ICCID immediately (no await)
-  (function selectICCID() {
-    const select = document.querySelector("select#idtype");
-    if (!select) {
-      console.warn("Dropdown not found.");
-      return;
-    }
+  document.body.appendChild(textarea);
+  textarea.focus();
+  textarea.select();
 
-    const option = [...select.options].find(
-      opt => opt.textContent.trim().toLowerCase() === "iccid"
+  try {
+    document.execCommand("copy");
+    console.log("✅ COPIED:", text);
+  } catch (err) {
+    console.error("❌ Copy failed:", err);
+  }
+
+  document.body.removeChild(textarea);
+}
+  console.log(gloable_icc_id);
+  copyToClipboard(gloable_icc_id);
+
+  
+  // ===========================================
+  // Acitivate 
+  // ===========================================
+// Click home logo
+function clickHomeLogo() {
+  const logo = document.querySelector("img.logoImg");
+  if (logo) {
+    logo.click();
+    console.log("Home logo clicked.");
+  } else {
+    console.warn("Home logo not found.");
+  }
+}
+
+// Select ICCID from dropdown
+function selectICCID() {
+  const select = document.querySelector("select#idtype");
+  if (!select) {
+    console.warn("Dropdown not found.");
+    return;
+  }
+
+  const option = [...select.options].find(
+    opt => opt.textContent.trim().toLowerCase() === "iccid"
+  );
+
+  if (!option) {
+    console.warn("ICCID option not found.");
+    return;
+  }
+
+  select.value = option.value;
+  select.dispatchEvent(new Event("change"));
+  console.log("Dropdown changed to ICCID.");
+}
+
+function fillSearchBar() {
+  const input = document.querySelector("input#number");
+
+  if (!input) {
+    console.warn("Search bar not found.");
+    return;
+  }
+
+  input.value = gloable_icc_id;
+  input.dispatchEvent(new Event("input", { bubbles: true }));
+
+  console.log("Search bar filled with:", gloable_icc_id);
+}
+  function clickSearchButton() {
+  const searchBtn = [...document.querySelectorAll("button.btn.btn-info")]
+    .find(btn =>
+      btn.textContent.trim().toLowerCase().includes("search")
     );
 
-    if (!option) {
-      console.warn("ICCID option not found.");
-      return;
-    }
+  if (!searchBtn) {
+    console.warn("Search button not found.");
+    return;
+  }
 
-    select.value = option.value;
-    select.dispatchEvent(new Event("change"));
-    console.log("Dropdown changed to ICCID.");
-  })();
+  searchBtn.click();
+  console.log("Search button clicked.");
+}
 
-  // ===========================================
-  // FINAL PART (still using await or normal)
-  // ===========================================
-  console.log(gloable_icc_id);
-  cp(gloable_icc_id);
+  async function clickActivateButton(timeout = 8000) {
+  const start = performance.now();
+  let activateBtn = null;
+
+  while (performance.now() - start < timeout) {
+    activateBtn = [...document.querySelectorAll("span.material-icons.green")]
+      .find(el => el.textContent.trim() === "check_circle");
+
+    if (activateBtn) break;
+
+    await new Promise(res => setTimeout(res, 200));
+  }
+
+  if (!activateBtn) {
+    console.warn("Activate button not found.");
+    return;
+  }
+
+  activateBtn.click();
+  console.log("Activate button clicked.");
+}
+
+clickHomeLogo();
+selectICCID();
+fillSearchBar();
+clickSearchButton();
+await clickActivateButton();
+
+ 
+
 }
 
 
