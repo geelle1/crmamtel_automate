@@ -18,17 +18,21 @@ function saveIccid(iccid) {
   console.log(`📝 #${logCount}: ${iccid}`);
 }
 
-function download_log() {  // renamed for easy console usage
+function download_log() {
   if (!iccidLog.length) return;
-  const csv = ['ID,Time,ICCID',
-    ...iccidLog.map(e => `${e.id},"${e.time}","${e.iccid}"`)
+  const csv = [
+    'ID,Time,ICCID',
+    ...iccidLog.map(e =>
+      `${e.id},"${e.time}","=""${e.iccid}"""` // force Excel to text
+    )
   ].join('\n');
+
   const a = document.createElement('a');
   a.href = URL.createObjectURL(new Blob([csv], { type: 'text/csv' }));
   a.download = `ICCID-Logs/${new Date().toISOString().split('T')[0]}-${logCount}.csv`;
   a.click();
-  console.log(`💾 AUTO-SAVED ${iccidLog.length} ICCIDs!`);
 }
+
 
 
 function page1() {
